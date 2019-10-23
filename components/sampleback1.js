@@ -111,9 +111,6 @@ Servicesandharacter()
   console.log("Hello!!") 
 
 }
-
-
-
     handleAppStateChange(nextAppState) {
       if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
         console.log('App has come to the foreground!')

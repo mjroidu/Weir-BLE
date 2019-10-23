@@ -65,6 +65,7 @@ class DeviceScreen extends React.Component {
     );
   }
 }
+
 const HomeStack = createStackNavigator({
   Home:  { screen: SensorScreen, 
   navigationOptions :{

@@ -13,7 +13,7 @@ import Dname from 'react-native-vector-icons/MaterialIcons';
 
 //import { createMaterialBottomTabNavigator } from 'react-navigation-material-bottom-tabs';   
 import React, { Component } from 'react';
-import { Device, BleManager  } from 'react-native-ble-plx';
+import { Device, BleManager, Characteristic  } from 'react-native-ble-plx';
 
 
 import {
@@ -41,11 +41,16 @@ export default class DeviceConfig extends React.Component {
     //this.BLDevices = [ ]
     this.state = {
       BLDevices: [],
-       isConnected: false
+      Characteristic: [],
+      descriptorsForServiceChar1: [],
+      isConnected: false,
+      teststate: "test state 1212121",
+      services: []
     };
     this.manager = new BleManager();
-    this.scanAndConnect = this.scanAndConnect.bind(this);
+    this.scanAndConnect();
   }
+  
 
   scanAndConnect() {
     this.manager.startDeviceScan(null, null, (error, device) => {
@@ -62,41 +67,118 @@ export default class DeviceConfig extends React.Component {
           BLDevices: [...this.state.BLDevices, device]
         });
       }
+      //||'Pump-02A2'
+        if(device.name==='Weir BLE') 
+        {
+          console.log("Weir Ble GOT!!!");
+          
+          device.isConnected()
+          .then ((connect)=> {
+            console.log("connected or not: ", connect);
+            this.setState({isConnected: true}); 
+            if (!connect){
+                device.connect()
+                .then((connect) => {                
+                  console.log("Device connected details", connect);
+                  this.manager.stopDeviceScan();
+                 this.discoverAllServiceChar(device);                                 
+                });
+            }
 
-      this.state.BLDevices.map(
-        item => {
-         if(item.name == 'Weir BLE'){          
-           return item;
-          }
+          });        
         }
-        )        
-
-      if (device.name ==='Weir BLE') {
-          this.manager.stopDeviceScan()
-          console.log("Weir Ble GOT!!!");    
-      
-      device.connect()
-      .then((connect) => {                
-        console.log("Device connected details", connect);  
-      
-
-      device.isConnected()
-      .then ((connect)=>{  
-                        
-        console.log("connected or not: ", connect);
-        this.setState({isConnected: true}); 
-    //     this.discoverAllServiceChar(device);
-      })
-      })     
+      });        
     }
-   
+
+     discoverAllServiceChar(device)
+    { 
+      let clickedItem = device;
+      //console.log("connected or not123456: ", clickedItem);
+      if(clickedItem == null) return;
+      console.log("clickedItem: ", clickedItem)
 
 
-    
-});  
-           
-}
+      clickedItem.discoverAllServicesAndCharacteristics(clickedItem.id)
+      .then ((connect1)=> {
+        console.log("Char and services", connect1);
+      
+        clickedItem.services()
+        .then ((connect2)=> {
+          this.setState({services: connect2});
+          console.log("only services", connect2);
+          
+          let SuuidArr = connect2.map(
+            item => {
+              return item.uuid;
+            }
+          );
+          console.log("uuidArr1: ", SuuidArr);    
+          
+          
+          //this.setState({SuuidArr});     
+          //console.log("uuidArr22: ", SuuidArr);        
+        //   let charuuid = SuuidArr;
+        //   {
+        //   (charuuid) ?
+        //   (charuuid = SuuidArr.map(
+        //     item => {
+        //       return item.uuid;
+        //     }
+  
+        //   ))
+        //   :
+        //   null
+        // }  
 
+
+          device.characteristicsForService(connect2[0].uuid) //service uuid
+          .then((connect4)=> {
+            console.log("characteristicsForService: ",connect4)
+            this.setState({Characteristic:connect4});
+         
+
+          device.descriptorsForService(connect2[0].uuid, connect4[0].uuid) //serviceUUID: UUID, characteristicUUID: UUID
+          .then((descriptorsForService)=> {
+            console.log("descriptorsForService: ",descriptorsForService)
+            this.setState({descriptorsForServiceChar1:descriptorsForService})
+
+            // this.setState({Characteristic:connect4});
+
+          }) 
+
+        }) 
+          
+      })
+         .catch((error) => {               
+         console.log("charachterstics of services error here: ", error);
+        })
+    })    
+    devivice.cancelConnection()
+        .then((cancelConnection)=> {
+          console.log("cancelConnection here: ",cancelConnection)
+      })                 
+    }
+
+
+    //   if (device.name ==='Weir BLE') {
+    //       this.manager.stopDeviceScan()
+    //       console.log("Weir Ble GOT!!!");    
+      
+    //   device.connect()
+    //   .then((connect) => {                
+    //     console.log("Device connected details", connect);  
+      
+
+    //   device.isConnected()
+    //   .then ((connect)=>{  
+                        
+    //     console.log("connected or not: ", connect);
+    //     this.setState({isConnected: true}); 
+    // //     this.discoverAllServiceChar(device);
+    //   })
+    //   })     
+    // }
+  
 
 UNSAFE_componentWillMount()  {
       const subscription = this.manager.onStateChange(state => {
@@ -132,9 +214,8 @@ UNSAFE_componentWillMount()  {
       }
    
   renderItem = (item) => {
-      console.log("Item: ", item);
+      console.log("CharacteristicCharacteristicCharacteristicCharacteristic: ", this.state);
       // const { navigate } = this.props.navigation;
-
       return (
        <View >
   
@@ -156,20 +237,29 @@ UNSAFE_componentWillMount()  {
         }}>
   <TouchableOpacity 
   title="More Details!!"
-  onPress={() => this.props.navigation.navigate('FullDetails', item.item)}>
+  onPress={
+    () => {
+      console.log("onpress passing data here", this.state)
+      this.props.navigation.navigate('FullDetails', 
+      {item2:item.item, 
+        item3:this.state.Characteristic[0].uuid, 
+        services: this.state.services,
+        descriptorsForServiceChar2: this.state.descriptorsForServiceChar1[0].characteristicUUID
+
+      })
+    }    
+    }>
                     
-          <View style ={{flexDirection:"row",  justifyContent: 'center', alignItems:"center"}}>
-            <Text>
-              <Ladybug1 style={{paddingRight: 2, color: "#35e841"}}  name = "ladybug" size={25} /></Text>
-              <Text style={{ color: "#ffffff", fontSize: 14, color: "white" }}> Touch To Explore More!!!</Text>
+          <View style ={{flexDirection:"row",  justifyContent: 'center', alignItems:"center"}}>                          
+          <Text style={{ color: "#ffffff", fontSize: 14, color: "white" }}> Touch Me<Ladybug1 style={{paddingRight: 2, color: "#35e841"}}  name = "ladybug" size={25} />To Explore More!!!</Text>
           </View>
           </TouchableOpacity>
   
           <View style= {{borderStyle:"solid", borderColor:"white", borderBottomWidth: 1}}>
   </View>
-  
 
- 
+
+
           <View style ={{flex: 1, flexDirection:"row", alignItems: "center"}}>
               <View style ={{flex: 1}}>
                 <FontIcons style={{paddingRight: 5, color: "#2febde"}}  name = "mobile-signal" size={25} />
@@ -215,6 +305,7 @@ UNSAFE_componentWillMount()  {
         
       );
     }
+
     render() {
       //console.log("$$$ checking 11", this.props);
       
@@ -224,13 +315,18 @@ UNSAFE_componentWillMount()  {
           <FlatList  data={this.state.BLDevices}  renderItem={this.renderItem} />
           {/* <Button onPress={this.scanAndConnect} title={"CLICK!"}><Text style={{ color: "black", fontSize: 20 }}>Scan</Text></Button>  */}
           </View> 
-          </View>
+          </View>          
           
           
           );
     }
   }
   // renderItem={this.renderItem}
+
+
+  
+
+
 
   const styles = StyleSheet.create({  
     container: {  

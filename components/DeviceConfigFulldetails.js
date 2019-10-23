@@ -24,6 +24,7 @@ import {
   Text, 
   SafeAreaView,
   View,
+  ScrollView,
   FlatList,
   Image,
   TouchableOpacity,
@@ -37,170 +38,109 @@ import {
 console.disableYellowBox = true;
 
 
-export default class DeviceConfig extends React.Component {
+export default class FullDetails extends React.Component {
     constructor(props) {      
-      super(props);     
+      super(props);    
+      console.log("$$$getting or not params", this.props.navigation.state.params);
       //this.BLDevices = [ ]
       this.state = {
         BLDevices: [],
-         isConnected: false
+         isConnected: false,
+         paramfromdeviceconfig: this.props.navigation.state.params.item2,
+         uuid: this.props.navigation.state.params.item3,
+         services: this.props.navigation.state.params.services,
+         Charuuid: this.props.navigation.state.params.descriptorsForServiceChar2
       };
-      this.manager = new BleManager();
-      this.scanAndConnect = this.scanAndConnect.bind(this);
-      //this.discoverAllServiceChar = this.discoverAllServiceChar.bind(this);
-    }
   
-    scanAndConnect() {
-      this.manager.startDeviceScan(null, null, (error, device) => {
-       if(error){
-        console.log(error);
-        return }     
-  
-        var isExists = this.state.BLDevices.findIndex(function(item){
-          return (item.id === device.id);
-        });
-  
-        if(isExists < 0){
-          this.setState({
-            BLDevices: [...this.state.BLDevices, device]
-          });
-        }
+      this.manager = new BleManager();    }
 
-
-      if(device.name ==='Weir BLE') 
-      { 
-
-        console.log("Weir Ble GOT!!!");               
-        device.connect()
-        .then((connect) => {                
-          console.log("Device connected details", connect);  
-
-
-        device.isConnected()
-        .then ((connect)=>{  
-                          
-          console.log("connected or not: ", connect);
-          this.setState({isConnected: true}); 
-          this.discoverAllServiceChar(device);
-        })
-        }) 
-        this.manager.stopDeviceScan()
-    }
-    });             
-    }
-
-    discoverAllServiceChar(device)
-    {
-            device.discoverAllServicesAndCharacteristics(device.id)
-            .then ((connect1)=> {
-              console.log("Char and services", connect1);
-            
-              device.services()
-              .then ((connect2)=> {
-                console.log("only services", connect2);
-                
-                let SuuidArr = connect2.map(
-                  item => {
-                    return item.uuid;
-                  }
-                );
-                console.log("uuidArr1: ", SuuidArr); 
-                this.setState({SuuidArr});                            
-            })
-  
-              .catch((error) => {               
-                console.log("charachterstics of services error here: ", error);
-              })
-            })                     
-    }
-
-    UNSAFE_componentWillMount() 
-  {
-    const subscription = this.manager.onStateChange(state => {
-        if (state === "PoweredOn") {
-          this.scanAndConnect();
-          subscription.remove();
-        }
-    }, true);
-  }
-
-  
-    renderItem = (item) => {
-        //console.log("Item: ", item);
-        //console.log(`this.props.navigation = ${JSON.stringify(this.props.navigation)}`);
-        let paramfromdeviceconfig = this.props.navigation.state.params;
-        console.log("ServicesUUidslist1: ", this.state.SuuidArr);
-        console.log("this123isConnected: ", this.state.isConnected);
-      
-
-      return (
-      
-  <View  
-      //  elevation ={30} 
-      //  style = {{padding: 10, 
-      //   backgroundColor:"steelblue", 
-      //   margin:10, 
-      //   width: 320, 
-      //   height: 170, 
-      //   flex: 1,
-      //   flexDirection: 'column',
-      //   justifyContent: 'center',
-      //   // alignItems: 'center',
-      //   alignContent: 'center',
-      //   alignSelf: 'center',
-      //   borderRadius: 10,                
-      //   }}        
-        >
-
-    <View style= {{borderStyle:"solid", borderColor:"white", borderBottomWidth: 1}} />           
-      <View style ={{flex: 8}}>         
-        <Text style={{ fontSize: 25, color: "black" }}> COMPLETE DETAILS </Text>
-        <Text style={{fontSize: 15, color: "black" }}> Device Basic Details: </Text>
-        <Text style={styles.itemId}> Connected: {this.state.isConnected.toString()} </Text> 
-        
-        <Text style={styles.itemId}> SensoreID: {(paramfromdeviceconfig.id === null) ? "UnDefined" : paramfromdeviceconfig.id } </Text>
-       
-        <Text style={styles.itemId}> SignalStrength: {(paramfromdeviceconfig.rssi === null) ? "UnDefined" : paramfromdeviceconfig.rssi } </Text>
-        <Text style={styles.itemId}> SensoreName: {(paramfromdeviceconfig.name === null) ? "UnDefined" : paramfromdeviceconfig.name } </Text>
-        <Text style={styles.itemId}> SensoreLocalName: {(paramfromdeviceconfig.localName === null) ? "UnDefined" : paramfromdeviceconfig.localName } </Text>
-
-        <Text style={{fontSize: 15, color: "blue" }}> Characterstics: </Text>        
-        {/* <Text style={styles.itemId}> Service UUId list1: {this.state.SuuidArr}</Text> */}
-
-
-        <Text style={styles.itemId}> Service UUId list: 
-      
-        {
-          
-          (this.state.SuuidArr)?
-          (this.state.SuuidArr.map(
-            item => {
-              <View key={item}>
-                <Text style={{ textAlign: 'center', marginTop: 5 }} >{item}</Text>
-              </View>
-            }
-          ))
-          :
-          null
-       }
-        
-        
-        </Text>
-
-      </View>    
-      
-    <View style= {{borderStyle:"solid", borderColor:"white", borderBottomWidth: 1}} />     
-  </View>
-);
-}
     render() {
-      console.log("$$$ checking 11", this.props);
+      console.log("$$$ params", this.props.navigation.state.params);
+      let paramfromdeviceconfig = this.state.paramfromdeviceconfig;
       return (
-        <View>
-        <View style ={{backgroundColor: 'skyblue', padding: 2}}>
-          <FlatList data={this.state.BLDevices} renderItem={this.renderItem} />         
-          </View> 
-          </View>                    
+        <ScrollView>
+        <View style={{marginLeft:12, marginRight:10}}>
+          {/* <View style= {{borderStyle:"solid", borderColor:"black", borderBottomWidth: 1}} />  */}
+
+            <View style ={{flex: 8}}>         
+            <Text style={{ fontWeight: "bold", fontSize: 25, color: "#5e5e6b" }}> Device DATA </Text>
+             <View style= {{borderStyle:"solid", borderColor:"#96969e" ,paddingBottom:5, borderBottomWidth: 1}} />  
+
+              <Text style={{fontWeight: "bold", color: "#5e5e6b",fontSize: 17, paddingTop:5}}> 
+              Connection Status </Text> 
+              <Text  style={{color: "#5e5e6b",fontSize: 17}}>{this.state.isConnected ? "yes" : "no"}</Text>
+
+              <Text style={styles.itemId}> SignalStrength </Text>
+             <Text style={{color: "#5e5e6b",fontSize: 17, paddingBottom: 3}}> {(paramfromdeviceconfig.rssi === null) ? "UnDefined" : paramfromdeviceconfig.rssi } </Text>
+
+              <Text style={styles.itemId}> SensoreName</Text> 
+              <Text style={{color: "#5e5e6b",fontSize: 17, paddingBottom: 3}}>{(paramfromdeviceconfig.name === null) ? "UnDefined" : paramfromdeviceconfig.name } </Text>
+
+              <Text style={styles.itemId}> SensoreLocalName</Text> 
+              <Text style={{color: "#5e5e6b",fontSize: 17, paddingBottom: 3}}>{(paramfromdeviceconfig.localName === null) ? "UnDefined" : paramfromdeviceconfig.localName } </Text>
+
+              <Text style={styles.itemId}> Service UUIds List </Text>
+              {
+                console.log("this.state.services: ", this.state.services)
+              }
+              {                
+                this.state.services.map(
+                  service => {
+                    return(<Text key={service.uuid} style={{color: "#5e5e6b",fontSize: 15, paddingBottom: 3}}>{service.uuid}</Text>)
+                  }
+                )
+
+              }
+
+              <Text style={{
+                color: "#5e5e6b", fontSize: 17, fontWeight: "bold", paddingTop:7
+              }}> UUIds </Text> 
+              <Text style={{color: "#5e5e6b",fontSize: 17, paddingBottom: 3}}>{(this.state.uuid === null) ? "UnDefined" : this.state.uuid }</Text>                             
+              {/* <Text style={styles.itemId}> Service UUId list:             
+              {                
+                (this.state.SuuidArr)?
+                (this.state.SuuidArr.map(
+                  item => {
+                    return (<View key={item}>
+                      <Text style={{ textAlign: 'center', marginTop: 5 }}> {item}</Text>
+                    </View>)
+                  }
+                ))
+                :
+                null
+            }
+              </Text> */}
+              
+              <Text style={{ fontWeight: "bold", fontSize: 25, color: "#5e5e6b", paddingBottom: 5, paddingTop: 7}}> Device Information </Text>
+              <View style= {{borderStyle:"solid", borderColor:"black", borderBottomWidth: 1}} /> 
+              <Text style={{
+                  color: "#5e5e6b", fontSize: 17, fontWeight: "bold", paddingTop:7
+              }}> Device Address </Text>
+              <Text style={{color: "#5e5e6b",fontSize: 17, paddingBottom: 3}}>
+              {(paramfromdeviceconfig.id === null) ? "UnDefined" : paramfromdeviceconfig.id } </Text>
+              <Text style={{fontWeight: "bold", fontSize: 25, color: "#5e5e6b", paddingBottom: 5, paddingTop: 7}}>SERVICE AND CHARACTERSTICS DETAILS </Text>
+
+
+              <View style= {{borderStyle:"solid", borderColor:"black", borderBottomWidth: 1}} />
+
+              {/* <Text style={{color: "#5e5e6b",fontSize: 17, paddingBottom: 3, paddingTop: 5}}> Characterstics UUid </Text>>
+              <Text>
+              {this.state.Charuuid} 
+
+               </Text>   */}
+
+
+               <Text style={{
+                color: "#5e5e6b", fontSize: 17, fontWeight: "bold", paddingTop:7
+              }}>Characterstics UUIds </Text> 
+              <Text style={{color: "#5e5e6b",fontSize: 17, paddingBottom: 3}}>{(this.state.Charuuid === null) ? "UnDefined" : this.state.Charuuid }</Text>  
+
+
+            </View>    
+            
+          <View style= {{borderStyle:"solid", borderColor:"white", borderBottomWidth: 1}} />     
+        </View>    
+        </ScrollView>              
           );
     }
   }
@@ -214,8 +154,10 @@ export default class DeviceConfig extends React.Component {
     },
   
     itemId: {
-      color: "#ffffff",
-      fontSize: 14,
+      color: "#5e5e6b",
+      fontSize: 17,
+      fontWeight: "bold",
+      
      
     },
     textStyle: {

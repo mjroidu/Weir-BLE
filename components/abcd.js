@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
-
 import { Device, BleManager, bleManager, Characteristic  } from 'react-native-ble-plx';
-
 import {
   StyleSheet,
   NativeAppEventEmitter,
@@ -14,9 +12,8 @@ import {
   Button,
   PermissionsAndroid,
   TouchableNativeFeedback
-  
-} from 'react-native';
-//import { Decipher } from 'crypto';
+} 
+from 'react-native';
 
 console.disableYellowBox = true;
 
@@ -38,9 +35,8 @@ export default class SampleSenConfig extends React.Component {
         }, true);
     }
 
-  scanAndConnect() 
-    {
-      this.state.manager.startDeviceScan(null, null, (error, device) => {
+    scanAndConnect() {
+        this.state.manager.startDeviceScan(null, null, (error, device) => {
           console.log(device);   
           if (error) {
             console.log(error);
@@ -59,117 +55,51 @@ export default class SampleSenConfig extends React.Component {
             device.isConnected()
               .then ((connect)=>{
                 console.log("connected or not: ", connect);
-             // this.discoverAllServiceChar(device);
-              })
-            })                
-          }       
-        });
-    }     
 
-//   discoverAllServiceChar(device)
-//   {
-//           device.discoverAllServicesAndCharacteristics(device.id)
-//           .then ((connect1)=> {
-//             console.log("Char and services", connect1);
-          
-//             device.services()
-//             .then ((connect2)=> {
-//               console.log("only services", connect2);
-              
-//               let SuuidArr = connect2.map(
-//                 item => {
-//                   return item.uuid;
-//                 }
-//               );
-//               console.log("uuidArr: ", SuuidArr);   
-              
-//               device.characteristicsForService(item)
-//               .then ((connect3)=> {
-//                 console.log("only services", connect3);
+              device.discoverAllServicesAndCharacteristics(device.id)
+                .then ((connect1)=> {
+                  console.log("Charcter and services", connect1);
 
-
-//               })
-
-
-//           })
-
-//             .catch((error) => {               
-//               console.log("charachterstics of services error here: ", error);
-//             })
-//           })                     
-// }
-
-
-
-// handleAppStateChange(nextAppState) {
-//   if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
-//     console.log('App has come to the foreground!')
-//     BleManager.getConnectedPeripherals([]).then((peripheralsArray) => {
-//       console.log('Connected peripherals: ' + peripheralsArray.length);
-//     });
-//   }
-//   this.setState({appState: nextAppState});
-// }
-
+                
+                  device.services()
+                  .then ((connect2)=> {
+                    console.log("only services", connect2);
                     
-                    // SuuidArr.map(
-                    //   item => {
-                    //     device.characteristicsForService(item) //serviceUUID
-                    //     .then((connect3, index)=> {
-                    //       console.log("charachterstics of services: ", connect3);
+                    let uuidArr = connect2.map(
+                      item => item.uuid
+                    );
+                    console.log("uuidArr: ", uuidArr); //list of services uuids                     
 
-                    //       let charUUID = connect3.map(
-                    //         item => {
-                    //           return item.uuid
-                    //         }
-                    //       );
-                    //       console.log("charUUID: ", charUUID); 
-                                   
-                                  
-                    //       device.descriptorsForService(SuuidArr, charUUID)
-                    //       .then((connect4)=> {
-                    //         console.log("Descriptors For Service: ", connect4);                                
-                    // })
-
-                  
+                    uuidArr.map(
+                      item => {
+                        device.characteristicsForService(item) //serviceUUID
+                        .then((connect3, index)=> {
+                          console.log("charachterstics of services: ", connect3);
 
 
+                          
+                          device.descriptorsForService(item, connect3[index].uuid) 
+                          .then((connect4)=> {
+                            console.log("Descriptors For Service: ", connect4, connect4[index].id);
+      
+                          })
+                        })
+                        .catch((error) => {               
+                          console.log("Descriptors For Service error here", error);
+                        })
+                      })
 
-                    // let charUUID = connect3.map(
-                    //   item => {
-                    //     return item.uuid
-                    //   }
-                    // );
-                    // console.log("charUUID: ", charUUID); 
+                    })
+                  })                            
+                })     
 
+                      }                      
+                    );
 
-                    // device.descriptorsForService(SuuidArr, charUUID) //serviceUUID, characteristicUUID
-                    // .then((connect4)=> {
-                    //    console.log("Descriptors For Service: ", connect4);
-                    // })              
+           }
+       });
 
-                    // device.descriptorsForService(connect2[0].uuid, connect3[0].uuid) //serviceUUID, characteristicUUID
-                    // .then((connect4)=> {
-                    //   console.log("Descriptors For Service: ", connect4, connect4[0].id);
-
-
-                      // device.readCharacteristicForService(connect2[0].uuid, connect3[0].uuid, connect4[0].id) //serviceUUID, characteristicUUID, transactionId
-                      // .then((connect5)=> {
-                      //   console.log("Read Characteristic For Service: ", connect5);
-
-
-                      // })
-                      // .catch((error) => {               
-                      //   console.log("readCharacteristicForService error here!", error);
-                      // })                    
-                    
-                  // })
-
-                                       
-            // .catch((error) => {               
-            //     console.log("Weirerror", error);
-            //   })
-
+    }
             //   .then((device) => {
             //     this.info(device.id);
             //     device.writeCharacteristicWithResponseForService('12ab', '34cd', 'aGVsbG8gbWlzcyB0YXBweQ==')
@@ -179,6 +109,7 @@ export default class SampleSenConfig extends React.Component {
             //       })
               
             //     })
+
              
     // send() 
     // {
@@ -245,5 +176,3 @@ const styles = StyleSheet.create({
     },
   
   });  
-
-
